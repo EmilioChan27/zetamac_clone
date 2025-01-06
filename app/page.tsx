@@ -1,101 +1,89 @@
-import Image from "next/image";
-
+'use client'
+import React, {useEffect, useState} from 'react'
+export type Equation = {
+  answer: number;
+  representation: string;
+}
 export default function Home() {
+  const [score, setScore] = useState(0) 
+  const [timeRemaining, setTimeRemaining] = useState(5)
+  const [equation, setEquation] = useState(generateEquation)
+  const [gameOver, setGameOver] = useState(false)
+  useEffect(() => {
+    const input = document.getElementById('input') as HTMLInputElement    
+    input.focus()
+  }, [])
+  useEffect(() => {
+    setTimeout(() => {
+      if (timeRemaining <= 1) {
+        setTimeRemaining(0)
+        setGameOver(true)
+      } else {
+        setTimeRemaining((timeRemaining) => timeRemaining-1)}
+      }
+      , 1000)    
+  }, [timeRemaining])
+  const checkAnswer = (guess: number, answer: number) => {
+     if (guess == answer) {
+        setScore(score => score +1)
+        setEquation(generateEquation)
+        const inputElement = document.getElementById('input') as HTMLInputElement
+        inputElement.value = ""
+     } 
+  }
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+      <main className="flex flex-col w-full h-full">
+          <div id="top" className="flex flex-row h-64 w-full justify-between align-center p-3">
+            <div id="timer" className="text-xl">Seconds left: {timeRemaining}</div>
+            <div id="score" className="text-xl">Score: {score}</div>
+          </div>         
+          <div id="main-section" className="flex h-24 w-full flex-row justify-center gap-4 items-center bg-gray-300">
+          {!gameOver && <>
+          <div id="equation" className="text-4xl font-normal">{equation.representation} =
+            </div>
+            <input id='input' type="text" className="h-12" onChange={(e) => checkAnswer(parseInt(e.target.value), equation.answer)}/>
+          </>}
+          {gameOver && <div className="flex flex-col gap-3 items-center">
+            <p className="text-4xl">Score: {score}
+              </p>   
+            <a href='http://localhost:3000' className="underline text-sm text-blue-800"> 
+              Try again              
+            </a>
+          </div>}
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
   );
 }
+
+function randomInt(min: number, max: number) {
+  const randomValues = new Uint32Array(1);
+  window.crypto.getRandomValues(randomValues);
+  return Math.floor(randomValues[0] / (0xFFFFFFFF + 1) * (max - min + 1)) + min;
+}
+const generateEquation = (): Equation => {
+  const n = randomInt(0,3)
+  let op = "+"
+  let operand1 = randomInt(2, 100)
+  let operand2 = randomInt(2, 100) 
+  let answer = operand1 + operand2
+  if (n == 0) {
+    op = '-'
+    operand1 = operand2 + randomInt(2, 100)
+    answer = operand1 - operand2 
+  } else if (n == 1) {
+    op = '×' 
+    operand1 = randomInt(2, 100)
+    operand2= randomInt(2, 12)
+    answer = operand1 * operand2
+  } else if (n == 2) {
+    op = '÷'
+    operand2 = randomInt(2, 12)
+    answer = randomInt(2, 100)
+    operand1 = operand2*answer
+  }
+
+  return {representation: `${operand1} ${op} ${operand2}`, answer: answer} 
+
+}
+
