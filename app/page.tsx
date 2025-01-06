@@ -1,89 +1,133 @@
 'use client'
-import React, {useEffect, useState} from 'react'
+import Main, { EquationSettings } from '@/components/Main';
+import React, {useState, useEffect} from 'react'
+import {useSearchParams } from 'next/navigation';
 export type Equation = {
   answer: number;
   representation: string;
 }
 export default function Home() {
-  const [score, setScore] = useState(0) 
-  const [timeRemaining, setTimeRemaining] = useState(5)
-  const [equation, setEquation] = useState(generateEquation)
-  const [gameOver, setGameOver] = useState(false)
+  const [op1AdditionMin, setOp1AdditionMin] = useState(2)
+  const [op1AdditionMax, setOp1AdditionMax] = useState(100)
+  const [op2AdditionMin, setOp2AdditionMin] = useState(2)
+  const [op2AdditionMax, setOp2AdditionMax] = useState(100)
+  const [op1MultiplicationMin, setOp1MultiplicationMin] = useState(2)
+  const [op1MultiplicationMax, setOp1MultiplicationMax] = useState(12)
+  const [op2MultiplicationMin, setOp2MultiplicationMin] = useState(2)
+  const [op2MultiplicationMax, setOp2MultiplicationMax] = useState(100)
+  const [additionEnabled, setAdditionEnabled] = useState(true)
+  const [subtractionEnabled, setSubtractionEnabled] = useState(true)
+  const [multiplicationEnabled, setMultiplicationEnabled] = useState(true)
+  const [divisionEnabled, setDivisionEnabled] = useState(true)
+  const [duration, setDuration] = useState(120)
+  const [showSettings, setShowSettings] = useState(true)
+  const searchParam = useSearchParams()
   useEffect(() => {
-    const input = document.getElementById('input') as HTMLInputElement    
-    input.focus()
-  }, [])
+   console.log('set division enabled to', divisionEnabled)    
+  }, [divisionEnabled])
   useEffect(() => {
-    setTimeout(() => {
-      if (timeRemaining <= 1) {
-        setTimeRemaining(0)
-        setGameOver(true)
-      } else {
-        setTimeRemaining((timeRemaining) => timeRemaining-1)}
-      }
-      , 1000)    
-  }, [timeRemaining])
-  const checkAnswer = (guess: number, answer: number) => {
-     if (guess == answer) {
-        setScore(score => score +1)
-        setEquation(generateEquation)
-        const inputElement = document.getElementById('input') as HTMLInputElement
-        inputElement.value = ""
-     } 
-  }
-  return (
-      <main className="flex flex-col w-full h-full">
-          <div id="top" className="flex flex-row h-64 w-full justify-between align-center p-3">
-            <div id="timer" className="text-xl">Seconds left: {timeRemaining}</div>
-            <div id="score" className="text-xl">Score: {score}</div>
-          </div>         
-          <div id="main-section" className="flex h-24 w-full flex-row justify-center gap-4 items-center bg-gray-300">
-          {!gameOver && <>
-          <div id="equation" className="text-4xl font-normal">{equation.representation} =
-            </div>
-            <input id='input' type="text" className="h-12" onChange={(e) => checkAnswer(parseInt(e.target.value), equation.answer)}/>
-          </>}
-          {gameOver && <div className="flex flex-col gap-3 items-center">
-            <p className="text-4xl">Score: {score}
-              </p>   
-            <a href='http://localhost:3000' className="underline text-sm text-blue-800"> 
-              Try again              
-            </a>
-          </div>}
+    console.log('set addition enabled to', additionEnabled)
+  }, [additionEnabled])
+  useEffect(() => {
+    console.log('set multiplicationEnabled to', multiplicationEnabled)
+  }, [multiplicationEnabled])
+  useEffect(() => {
+    console.log('set subtractione enabled to', subtractionEnabled)
+  }, [subtractionEnabled])
+  useEffect(() => {
+    const game_id = searchParam.get('game_id')
+    if (game_id && showSettings) {
+      setShowSettings(false)      
+    }
+  }, [searchParam, showSettings])
+  if (showSettings) {
+    return (
+      <div id="main-page" className="flex flex-col items-center w-dvw h-dvh">
+      <div id="container" className="bg-gray-300 flex flex-col max-h-fit w-2/5 p-6 gap-2">
+        <h1 className='text-3xl font-bold'>Arithmetic Game</h1>
+        <p>The Arithmetic Game is a fast-paced speed drill where you are given two minutes to solve as many arithmetic problems as you can.
+        </p>
+        <p>If you have any question, please contact arithmetic@zetamac.com</p>
+        <div id="addition-settings" className="flex flex-col">
+          <div className="flex flex-row">
+            <input type="checkbox" defaultChecked className="mr-1" onChange={() => setAdditionEnabled((prev) => !prev)} />
+            <p>Addition</p>
           </div>
-
-      </main>
-  );
-}
-
-function randomInt(min: number, max: number) {
-  const randomValues = new Uint32Array(1);
-  window.crypto.getRandomValues(randomValues);
-  return Math.floor(randomValues[0] / (0xFFFFFFFF + 1) * (max - min + 1)) + min;
-}
-const generateEquation = (): Equation => {
-  const n = randomInt(0,3)
-  let op = "+"
-  let operand1 = randomInt(2, 100)
-  let operand2 = randomInt(2, 100) 
-  let answer = operand1 + operand2
-  if (n == 0) {
-    op = '-'
-    operand1 = operand2 + randomInt(2, 100)
-    answer = operand1 - operand2 
-  } else if (n == 1) {
-    op = '×' 
-    operand1 = randomInt(2, 100)
-    operand2= randomInt(2, 12)
-    answer = operand1 * operand2
-  } else if (n == 2) {
-    op = '÷'
-    operand2 = randomInt(2, 12)
-    answer = randomInt(2, 100)
-    operand1 = operand2*answer
+          <div id="settings-input" className="pl-7 flex flex-row items-center">
+            <p>{'Range: ('}</p>          
+            <input type='text' defaultValue={2} className='w-10 mx-1 h-6 pr-1 text-right' onChange={(e) => setOp1AdditionMin(parseInt(e.target.value))}/>
+            <p>to</p>            
+            <input type='text' defaultValue={100} className='w-10 mx-1 h-6 pr-1 text-right' onChange={(e) => setOp1AdditionMax(parseInt(e.target.value))}/>
+            <p>{') + ('}</p>
+            <input type='text' defaultValue={2} className='w-10 mx-1 h-6 pr-1 text-right' onChange={(e) => setOp2AdditionMin(parseInt(e.target.value))}/>
+            <p>to</p>            
+            <input type='text' defaultValue={100} className='w-10 mx-1 h-6 pr-1 text-right'onChange={(e) => setOp2AdditionMax(parseInt(e.target.value))}/>
+            <p>{')'}</p>
+        </div>
+        </div>
+        <div id="subtraction-settings" className="flex flex-col">
+          <div className="flex flex-row">
+            <input type="checkbox" defaultChecked className="mr-1" onChange={() => setSubtractionEnabled((prev) => !prev)} />
+            <p>Subtraction</p>
+          </div>
+          <p className="pl-7">Addition problems in reverse.</p>
+        </div>
+        <div id="multiplication-settings" className="flex flex-col">
+          <div className="flex flex-row">
+            <input type="checkbox" defaultChecked className="mr-1" onChange={() => setMultiplicationEnabled((prev) => !prev)} />
+            <p>Multiplication</p>
+          </div>
+          <div id="multiplication-settings-input" className="pl-7 flex flex-row items-center">
+            <p>{'Range: ('}</p>          
+            <input type='text' defaultValue={2} className='w-10 mx-1 h-6 pr-1 text-right' onChange={(e) => setOp1MultiplicationMin(parseInt(e.target.value))}/>
+            <p>to</p>            
+            <input type='text' defaultValue={12} className='w-10 mx-1 h-6 pr-1 text-right' onChange={(e) => setOp1MultiplicationMax(parseInt(e.target.value))}/>
+            <p>{') + ('}</p>
+            <input type='text' defaultValue={2} className='w-10 mx-1 h-6 pr-1 text-right' onChange={(e) => setOp2MultiplicationMin(parseInt(e.target.value))}/>
+            <p>to</p>            
+            <input type='text' defaultValue={100} className='w-10 mx-1 h-6 pr-1 text-right'onChange={(e) => setOp2MultiplicationMax(parseInt(e.target.value))}/>
+            <p>{')'}</p>
+        </div>
+        </div>
+        <div id="division-settings" className="flex flex-col">
+          <div className="flex flex-row">
+            <input type="checkbox" defaultChecked className="mr-1" onChange={() => setDivisionEnabled((prev) => !prev)} />
+            <p>Division</p>
+          </div>
+          <p className="pl-7">Multiplication problems in reverse.</p>
+      </div>      
+      <div id="duration" className="flex flex-row gap-2">
+        <p>Duration: </p>        
+        <select defaultValue={120} onChange={(e) => setDuration(parseInt(e.target.value))} className="w-27">
+          <option value={30}>30 seconds</option>
+          <option value={60}>60 seconds</option>
+          <option value={120}>120 seconds</option>
+          <option value={300}>300 seconds</option>
+          <option value={600}>600 seconds</option>
+        </select>
+      </div>
+      <button onClick={() => setShowSettings(false)} className="bg-white self-end px-3 rounded-sm">Start</button>
+    </div>
+    </div>
+  )
+} else {
+  const settings: EquationSettings = {
+    addition1Min: op1AdditionMin,
+    addition1Max: op1AdditionMax,
+    addition2Min: op2AdditionMin,
+    addition2Max: op2AdditionMax,
+    multiplication1Min: op1MultiplicationMin, // this is on purpose
+    multiplication1Max: op1MultiplicationMax, // same for the other multiplication ones
+    multiplication2Min: op2MultiplicationMin,
+    multiplication2Max: op2MultiplicationMax,
+    additionEnabled,
+    subtractionEnabled,
+    multiplicationEnabled,
+    divisionEnabled,
+    duration,
   }
-
-  return {representation: `${operand1} ${op} ${operand2}`, answer: answer} 
+  return <Main settings={settings}/> 
+}
 
 }
 
